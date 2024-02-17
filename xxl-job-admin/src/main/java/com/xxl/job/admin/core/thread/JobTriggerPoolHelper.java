@@ -25,6 +25,8 @@ public class JobTriggerPoolHelper {
     private ThreadPoolExecutor slowTriggerPool = null;
 
     public void start(){
+        //初始化一个 快触发的池子 优先选择快触发
+        //最大200线程，最多处理1000任务
         fastTriggerPool = new ThreadPoolExecutor(
                 10,
                 XxlJobAdminConfig.getAdminConfig().getTriggerPoolFastMax(),
@@ -38,7 +40,12 @@ public class JobTriggerPoolHelper {
                     }
                 });
 
+        //初始化一个 慢触发的池子
+        //最大100线程，最多处理2000任务
+        //一分钟内超时10次，则采用慢触发器执行
+        //当一分钟以内任务超过10次执行时间超过500ms，则加入慢线程池执行
         slowTriggerPool = new ThreadPoolExecutor(
+
                 10,
                 XxlJobAdminConfig.getAdminConfig().getTriggerPoolSlowMax(),
                 60L,
