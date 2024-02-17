@@ -30,10 +30,11 @@ public class JobLogReportHelper {
     public void start(){
         logrThread = new Thread(new Runnable() {
 
+            //每分钟刷新一次
             @Override
             public void run() {
 
-                // last clean log time
+                // last clean log time  记录上次清除日志时间
                 long lastCleanLogTime = 0;
 
 
@@ -43,8 +44,7 @@ public class JobLogReportHelper {
                     try {
 
                         for (int i = 0; i < 3; i++) {
-
-                            // today
+                            // today  分别统计今天,昨天,前天0~24点的数据
                             Calendar itemDay = Calendar.getInstance();
                             itemDay.add(Calendar.DAY_OF_MONTH, -i);
                             itemDay.set(Calendar.HOUR_OF_DAY, 0);
@@ -62,12 +62,15 @@ public class JobLogReportHelper {
                             Date todayTo = itemDay.getTime();
 
                             // refresh log-report every minute
+                            //设置默认值
                             XxlJobLogReport xxlJobLogReport = new XxlJobLogReport();
                             xxlJobLogReport.setTriggerDay(todayFrom);
                             xxlJobLogReport.setRunningCount(0);
                             xxlJobLogReport.setSucCount(0);
                             xxlJobLogReport.setFailCount(0);
 
+
+                            //查询失败, 成功，总的调用次数
                             Map<String, Object> triggerCountMap = XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().findLogReport(todayFrom, todayTo);
                             if (triggerCountMap!=null && triggerCountMap.size()>0) {
                                 int triggerDayCount = triggerCountMap.containsKey("triggerDayCount")?Integer.valueOf(String.valueOf(triggerCountMap.get("triggerDayCount"))):0;
@@ -93,11 +96,13 @@ public class JobLogReportHelper {
                         }
                     }
 
-                    // 2、log-clean: switch open & once each day
+                    // 2、log-clean: switch open & once each day  日志清除
+                    //设置了保留日志天数且日志保留了24小时，则进入
                     if (XxlJobAdminConfig.getAdminConfig().getLogretentiondays()>0
                             && System.currentTimeMillis() - lastCleanLogTime > 24*60*60*1000) {
 
                         // expire-time
+                        //通过日志保留天数算出清除log时间
                         Calendar expiredDay = Calendar.getInstance();
                         expiredDay.add(Calendar.DAY_OF_MONTH, -1 * XxlJobAdminConfig.getAdminConfig().getLogretentiondays());
                         expiredDay.set(Calendar.HOUR_OF_DAY, 0);
