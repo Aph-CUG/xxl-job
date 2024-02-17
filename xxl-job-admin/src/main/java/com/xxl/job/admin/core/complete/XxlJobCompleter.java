@@ -27,7 +27,7 @@ public class XxlJobCompleter {
      */
     public static int updateHandleInfoAndFinish(XxlJobLog xxlJobLog) {
 
-        // finish
+        // finish  // finish 若父任务正常结束，则终止子任务,以及设置Childmsg
         finishJob(xxlJobLog);
 
         // text最大64kb 避免长度过长
@@ -35,7 +35,7 @@ public class XxlJobCompleter {
             xxlJobLog.setHandleMsg( xxlJobLog.getHandleMsg().substring(0, 15000) );
         }
 
-        // fresh handle
+        // fresh handle 更新超时joblog
         return XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().updateHandleInfo(xxlJobLog);
     }
 
