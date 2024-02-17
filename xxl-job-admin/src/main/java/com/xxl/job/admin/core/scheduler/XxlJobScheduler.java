@@ -20,26 +20,27 @@ public class XxlJobScheduler  {
     private static final Logger logger = LoggerFactory.getLogger(XxlJobScheduler.class);
 
 
+    //初始化xxl-job的调度中心
     public void init() throws Exception {
-        // init i18n
+        // init i18n 国际化相关的配置
         initI18n();
 
-        // admin trigger pool start
+        // admin trigger pool start 触发器池的开启，初始化了两个任务调度的线程池
         JobTriggerPoolHelper.toStart();
 
-        // admin registry monitor run
+        // admin registry monitor run 注册监听相关的执行，这里是刷新 group 和 registry表的关系
         JobRegistryHelper.getInstance().start();
 
-        // admin fail-monitor run
+        // admin fail-monitor run 其实就是在拉取到失败的日志，如果需要重试就再执行一次，并且执行告警
         JobFailMonitorHelper.getInstance().start();
 
-        // admin lose-monitor run ( depend on JobTriggerPoolHelper )
+        // admin lose-monitor run ( depend on JobTriggerPoolHelper ) 处理超过10分钟还在运行中但是机器已经不存在的执行调度改成 失败。
         JobCompleteHelper.getInstance().start();
 
-        // admin log report start
+        // admin log report start 清除过期日志以及 页面统计信息的统计
         JobLogReportHelper.getInstance().start();
 
-        // start-schedule  ( depend on JobTriggerPoolHelper )
+        // start-schedule  ( depend on JobTriggerPoolHelper ) todo 关键方法，执行任务调度。
         JobScheduleHelper.getInstance().start();
 
         logger.info(">>>>>>>>> init xxl-job admin success.");
