@@ -34,13 +34,13 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
         // init JobHandler Repository
         /*initJobHandlerRepository(applicationContext);*/
 
-        // init JobHandler Repository (for method)
+        // init JobHandler Repository (for method)  初始化调度器资源管理器
         initJobHandlerMethodRepository(applicationContext);
 
-        // refresh GlueFactory
+        // refresh GlueFactory  刷新GlueFactory
         GlueFactory.refreshInstance(1);
 
-        // super start
+        // super start  启动服务，接收服务器请求
         try {
             super.start();
         } catch (Exception e) {
@@ -81,10 +81,10 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
         if (applicationContext == null) {
             return;
         }
-        // init job handler from method
+        // init job handler from method 获取spring容器里面的bean
         String[] beanDefinitionNames = applicationContext.getBeanNamesForType(Object.class, false, true);
         for (String beanDefinitionName : beanDefinitionNames) {
-
+            //遍历每个容器对象
             // get bean
             Object bean = null;
             Lazy onBean = applicationContext.findAnnotationOnBean(beanDefinitionName, Lazy.class);
@@ -98,6 +98,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
             // filter method
             Map<Method, XxlJob> annotatedMethods = null;   // referred to ：org.springframework.context.event.EventListenerMethodProcessor.processBean
             try {
+                //获取每个注解XxlJob方法
                 annotatedMethods = MethodIntrospector.selectMethods(bean.getClass(),
                         new MethodIntrospector.MetadataLookup<XxlJob>() {
                             @Override
@@ -113,6 +114,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
             }
 
             // generate and regist method job handler
+            //遍历标记了XxlJob注解的方法
             for (Map.Entry<Method, XxlJob> methodXxlJobEntry : annotatedMethods.entrySet()) {
                 Method executeMethod = methodXxlJobEntry.getKey();
                 XxlJob xxlJob = methodXxlJobEntry.getValue();
